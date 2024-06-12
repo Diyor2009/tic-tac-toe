@@ -2,45 +2,7 @@ import { Fragment, useEffect, useState } from "react";
 import "./App.css";
 import Blocks from "./components/Blocks";
 
-!get("skill") ? set("skill") : "";
-
-function set(key, value) {
-  localStorage.setItem(key, value);
-}
-
-function get(key) {
-  localStorage.setItem(key);
-}
-
-let blocks = [
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-  {
-    value: "",
-  },
-];
+let blocks = ["", "", "", "", "", "", "", "", ""];
 
 const win_variants = [
   [0, 1, 2],
@@ -53,9 +15,9 @@ const win_variants = [
   [2, 4, 6],
 ];
 
-const add_icon_variants = [
+const moves_conditions = [
   {
-    set_icon: 0,
+    position: 0,
     positions: [
       [3, 6],
       [1, 2],
@@ -64,7 +26,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 1,
+    position: 1,
     positions: [
       [0, 2],
       [4, 7],
@@ -72,7 +34,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 2,
+    position: 2,
     positions: [
       [0, 1],
       [5, 8],
@@ -81,7 +43,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 3,
+    position: 3,
     positions: [
       [4, 5],
       [0, 6],
@@ -89,16 +51,17 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 4,
+    position: 4,
     positions: [
-      [3, 5],
-      [1, 7],
       [0, 8],
+      [1, 7],
+      [2, 6],
+      [3, 5],
     ],
     added: "false",
   },
   {
-    set_icon: 5,
+    position: 5,
     positions: [
       [3, 4],
       [2, 8],
@@ -106,7 +69,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 6,
+    position: 6,
     positions: [
       [7, 8],
       [0, 3],
@@ -115,7 +78,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 7,
+    position: 7,
     positions: [
       [6, 8],
       [1, 4],
@@ -123,7 +86,7 @@ const add_icon_variants = [
     added: "false",
   },
   {
-    set_icon: 8,
+    position: 8,
     positions: [
       [6, 7],
       [2, 5],
@@ -133,162 +96,155 @@ const add_icon_variants = [
   },
 ];
 
-let winner = "";
+function set(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function get(key) {
+  return JSON.parse(localStorage.getItem(key));
+}
+
+var combination_values = [];
 
 function App() {
+  const [winner, setWinner] = useState("");
   const [user, setUser] = useState("x");
   const [selected_user, setSelected_user] = useState("x");
   const [selecting_user, setSelecting_user] = useState(selected_user);
   const [blocks_arr, setBlocks_arr] = useState(blocks);
   let ai = "o";
+  if (!get("combinations")) {
+    set("combinations", []);
+  }
   useEffect(() => {
     if (selected_user == "x") {
       ai = "o";
     } else {
       ai = "x";
     }
-    if (blocks_arr.every((block) => block.value != "")) {
+    if (blocks_arr.every((block) => block != "")) {
       restart();
     }
     if (user == ai) {
       analysis();
     }
   }, [user]);
+
+  function saveCombination(combination) {
+    const last_combinations = get("combinations");
+    const new_combination = [...last_combinations, combination];
+    set("combinations", [...new Set(new_combination)]);
+  }
+
   function checkWinner(value) {
     if (
       win_variants.some((variant_list) =>
-        variant_list.every((variant) => blocks_arr[variant].value == value)
+        variant_list.every((variant) => blocks_arr[variant] == value)
       )
     ) {
-      winner = value;
+      setWinner(value);
       return true;
     }
   }
   function restart() {
     setUser("x");
     setSelected_user(selecting_user);
-    blocks_arr.forEach((block) => {
-      block.value = "";
+    blocks = blocks.map((value) => {
+      return "";
     });
-    winner = "";
+    console.log(blocks);
+
+    setBlocks_arr(blocks);
+    setWinner("");
   }
   function analysis() {
+    // [2, 6, 0, 1]
+    // [6, 2, 8, 5]
+    // [6, 2, 0, 1]
+    // [4, 8, 2, 5]
+    // [2, 7, 8, 5]
     let result_index = 0;
-    setTimeout(() => {
+    const combinations = get("combinations").filter(
+      (combination) =>
+        combination[0] == combination_values[0] &&
+        combination[1] == combination_values[1]
+    );
+    if (combinations.length && combination_values.length == 2) {
+      result_index = combinations[0][2];
+    } else {
       let count = 0;
-      if (
-        add_icon_variants.filter(
-          (data) =>
-            data.added == "false" &&
-            count == 0 &&
-            data.positions.some(
-              (coordinate) =>
-                coordinate.every(
-                  (index) => blocks_arr[index].value == selected_user
-                ) || coordinate.every((index) => blocks_arr[index].value == ai)
-            )
-        )[0]
-      ) {
-        add_icon_variants.forEach((data) => {
-          if (
-            data.added == "false" &&
-            count == 0 &&
-            data.positions.some((coordinate) =>
-              coordinate.every((index) => blocks_arr[index].value == ai)
-            )
-          ) {
-            if (blocks_arr[data.set_icon].value == "") {
-              data.added = "true";
-              result_index = data.set_icon;
-              count += 1;
-            }
-          } else if (
-            data.added == "false" &&
-            count == 0 &&
-            data.positions.some((coordinate) =>
-              coordinate.every(
-                (index) => blocks_arr[index].value == selected_user
-              )
-            )
-          ) {
-            if (blocks_arr[data.set_icon].value == "") {
-              result_index = data.set_icon;
-              data.added = "true";
-              count += 1;
-            }
-          }
-          if (count == 0) {
-            if (blocks_arr.filter((block) => block.value == "")[0]) {
-              result_index = blocks_arr.indexOf(
-                blocks_arr.filter((block) => block.value == "")[0]
-              );
-            }
-          }
-        });
-      } else if (
-        add_icon_variants.filter(
-          (data) =>
-            data.type == "start attack" &&
-            data.added == "false" &&
-            count == 0 &&
-            data.positions.some(
-              (coordinate) =>
-                coordinate.every((index) => blocks_arr[index].value == "") ||
-                coordinate.every((index) => blocks_arr[index].value == ai)
-            )
-        )[0]
-      ) {
-        add_icon_variants
-          .filter(
-            (data) =>
-              data.type == "start attack" &&
-              data.added == "false" &&
-              count == 0 &&
-              data.positions.some((coordinate) =>
-                coordinate.every(
-                  (index) =>
-                    blocks_arr[index].value == "" ||
-                    blocks_arr[index].value == ai
-                )
-              )
-          )
-          .forEach((data) => {
+      moves_conditions.forEach((item) => {
+        if (item.added == "false" && blocks_arr[item.position] == "") {
+          item.positions.forEach((position) => {
             if (
-              data.added == "false" &&
-              count == 0 &&
-              data.positions.some((coordinate) =>
-                coordinate.every(
-                  (index) =>
-                    blocks_arr[index].value == "" ||
-                    blocks_arr[index].value == ai
-                )
-              )
+              blocks_arr[position[0]] == "o" &&
+              blocks_arr[position[1]] == "o"
             ) {
-              if (blocks_arr[data.set_icon].value == "") {
-                data.added = "true";
-                result_index = data.set_icon;
-                count += 1;
-              }
+              count = 1;
+              result_index = item.position;
             }
           });
+        }
+      });
+      moves_conditions.forEach((item) => {
+        if (item.added == "false" && blocks_arr[item.position] == "") {
+          item.positions.forEach((position) => {
+            if (
+              blocks_arr[position[0]] == "x" &&
+              blocks_arr[position[1]] == "x"
+            ) {
+              count = 1;
+              result_index = item.position;
+            }
+          });
+        }
+      });
+      moves_conditions.forEach((item) => {
+        if (item.added == "false" && blocks_arr[item.position] == "") {
+          item.positions.forEach((position) => {
+            if (
+              blocks_arr[position[0]] == "o" &&
+              blocks_arr[position[1]] == "o"
+            ) {
+              count = 1;
+              result_index = item.position;
+            }
+          });
+        }
+      });
+      if (count == 0) {
+        result_index = blocks_arr.indexOf("");
       }
-      if (blocks_arr[4].value == "") {
+      if (blocks_arr[4] == "") {
+        count = 1;
         result_index = 4;
       }
+    }
+    setTimeout(() => {
       addAi(result_index);
     }, 1000);
   }
   function addAi(index) {
-    if (blocks_arr[index].value == "" && winner == "") {
-      blocks_arr[index].value = ai;
+    if (blocks_arr[index] == "" && winner == "") {
+      blocks_arr[index] = ai;
       checkWinner(ai);
       user == "x" ? setUser("o") : setUser("x");
     }
   }
   function addValue(index) {
-    if (blocks_arr[index].value == "" && winner == "") {
-      blocks_arr[index].value = user;
-      checkWinner(user);
+    if (blocks_arr[index] == "" && winner == "" && user == selected_user) {
+      blocks_arr[index] = user;
+      combination_values.push(index);
+      if (checkWinner(selected_user)) {
+        if (
+          get("combinations").every(
+            (combination) =>
+              combination.toString() != combination_values.toString()
+          )
+        ) {
+          saveCombination(combination_values);
+        }
+      }
       user == "x" ? setUser("o") : setUser("x");
     }
   }
@@ -297,7 +253,7 @@ function App() {
       <h1 className="players_turn">Player: {user}</h1>
       <div className="blocks_wrapper">
         {blocks_arr.map((block, i) => (
-          <Blocks value={block.value} clickHandler={() => addValue(i)} id={i} />
+          <Blocks value={block} clickHandler={() => addValue(i)} id={i} />
         ))}
       </div>
       <div className={`win_modal_wrapper ${winner != "" ? "showed" : ""}`}>
@@ -328,7 +284,7 @@ function App() {
           </div>
           <div className="restart_wrapper">
             <img
-              onClick={() => restart()}
+              onClick={restart}
               className="restart_icon"
               src="https://cdn-icons-png.flaticon.com/512/82/82004.png"
             />
