@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a React-based implementation of the classic Tic-Tac-Toe game with a twist: you play as 'X' against an AI bot that plays as 'O'. The game is designed to be simple yet challenging, as the bot is programmed to make smart moves based on the current state of the board.
+This project is a React-based implementation of the classic Tic-Tac-Toe game with a twist: you play against an AI bot. The game is designed to be simple yet challenging, as the bot is programmed to make smart moves based on the current state of the board.
 
 ## Features
 
