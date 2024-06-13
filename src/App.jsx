@@ -112,36 +112,43 @@ function App() {
   const [selected_user, setSelected_user] = useState("x");
   const [selecting_user, setSelecting_user] = useState(selected_user);
   const [blocks_arr, setBlocks_arr] = useState(blocks);
-  let ai = "o";
+  let aiIcon = selected_user == "x" ? "o" : "x";
   if (!get("combinations")) {
     set("combinations", []);
   }
   useEffect(() => {
     if (selected_user == "x") {
-      ai = "o";
+      aiIcon = "o";
     } else {
-      ai = "x";
+      aiIcon = "x";
     }
+
     if (blocks_arr.every((block) => block != "")) {
+      checkWinner(user == "x" ? "o" : "xА");
       restart();
     }
-    if (user == ai) {
+
+    if (user == aiIcon) {
       analysis();
     }
   }, [user]);
 
   function saveCombination(combination) {
     const last_combinations = get("combinations");
-    const new_combination = [...last_combinations, combination];
-    set("combinations", [...new Set(new_combination)]);
+    const new_combinations = [...last_combinations, combination];
+    set("combinations", new_combinations);
   }
 
   function checkWinner(value) {
     if (
       win_variants.some((variant_list) =>
-        variant_list.every((variant) => blocks_arr[variant] == value)
+        variant_list.every((index) => blocks_arr[index] == value)
       )
     ) {
+      if (value == selected_user) {
+        saveCombination(combination_values);
+      }
+      combination_values = [];
       setWinner(value);
       return true;
     }
@@ -149,13 +156,15 @@ function App() {
   function restart() {
     setUser("x");
     setSelected_user(selecting_user);
-    blocks = blocks.map((value) => {
-      return "";
-    });
-    console.log(blocks);
-
+    blocks = blocks.map(() => "");
     setBlocks_arr(blocks);
+
     setWinner("");
+
+    combination_values = [];
+    if (selecting_user == "o") {
+      analysis();
+    }
   }
   function analysis() {
     // [2, 6, 0, 1]
@@ -177,8 +186,8 @@ function App() {
         if (item.added == "false" && blocks_arr[item.position] == "") {
           item.positions.forEach((position) => {
             if (
-              blocks_arr[position[0]] == "o" &&
-              blocks_arr[position[1]] == "o"
+              blocks_arr[position[0]] == aiIcon &&
+              blocks_arr[position[1]] == aiIcon
             ) {
               count = 1;
               result_index = item.position;
@@ -190,8 +199,8 @@ function App() {
         if (item.added == "false" && blocks_arr[item.position] == "") {
           item.positions.forEach((position) => {
             if (
-              blocks_arr[position[0]] == "x" &&
-              blocks_arr[position[1]] == "x"
+              blocks_arr[position[0]] == selected_user &&
+              blocks_arr[position[1]] == selected_user
             ) {
               count = 1;
               result_index = item.position;
@@ -203,8 +212,8 @@ function App() {
         if (item.added == "false" && blocks_arr[item.position] == "") {
           item.positions.forEach((position) => {
             if (
-              blocks_arr[position[0]] == "o" &&
-              blocks_arr[position[1]] == "o"
+              blocks_arr[position[0]] == aiIcon &&
+              blocks_arr[position[1]] == aiIcon
             ) {
               count = 1;
               result_index = item.position;
@@ -220,14 +229,14 @@ function App() {
         result_index = 4;
       }
     }
-    setTimeout(() => {
-      addAi(result_index);
-    }, 1000);
+    // setTimeout(() => {
+    addAi(result_index);
+    // }, 1000);
   }
   function addAi(index) {
     if (blocks_arr[index] == "" && winner == "") {
-      blocks_arr[index] = ai;
-      checkWinner(ai);
+      blocks_arr[index] = aiIcon;
+      checkWinner(aiIcon);
       user == "x" ? setUser("o") : setUser("x");
     }
   }
@@ -235,16 +244,7 @@ function App() {
     if (blocks_arr[index] == "" && winner == "" && user == selected_user) {
       blocks_arr[index] = user;
       combination_values.push(index);
-      if (checkWinner(selected_user)) {
-        if (
-          get("combinations").every(
-            (combination) =>
-              combination.toString() != combination_values.toString()
-          )
-        ) {
-          saveCombination(combination_values);
-        }
-      }
+      checkWinner(selected_user);
       user == "x" ? setUser("o") : setUser("x");
     }
   }
