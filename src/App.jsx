@@ -167,11 +167,6 @@ function App() {
     }
   }
   function analysis() {
-    // [2, 6, 0, 1]
-    // [6, 2, 8, 5]
-    // [6, 2, 0, 1]
-    // [4, 8, 2, 5]
-    // [2, 7, 8, 5]
     let result_index = 0;
     const combinations = get("combinations").filter(
       (combination) =>
@@ -229,9 +224,9 @@ function App() {
         result_index = 4;
       }
     }
-    // setTimeout(() => {
-    addAi(result_index);
-    // }, 1000);
+    setTimeout(() => {
+      addAi(result_index);
+    }, 1000);
   }
   function addAi(index) {
     if (blocks_arr[index] == "" && winner == "") {
