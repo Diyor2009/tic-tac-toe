@@ -10,6 +10,11 @@ This project is a React-based implementation of the classic Tic-Tac-Toe game wit
 - **React Functional Components**: Built using modern React, leveraging hooks and state management.
 - **Smart AI**: The bot is designed to block your moves and try to win the game.
 
+## Code Disclaimer
+
+Please accept my apologies in advance for any non-standard code practices you may encounter within this project. The code was written during my learning phase, primarily for entertainment purposes, and while it may not strictly adhere to common coding standards, it was a journey filled with valuable lessons and creative exploration. Despite the unconventional approach, the end result is quite impressive and demonstrates the joy and challenges of learning development. Enjoy the game!
+
+
 ## Installation
 
 To get started with this project, clone the repository and install the dependencies:
